@@ -1,18 +1,42 @@
-var degree = document.querySelector('.temp');
-var parseNumber = parseInt(degree.innerText);
-var celsius = (parseNumber - 32) * 5/9 + ' °C';
-var fahrenheit = (parseNumber * 9/5) + 32 + ' °F';
+var API_KEY = '0c680c51afe47d31fc6e83ec33560ffb';
+var f = false;
+var wd;
 
-degree.addEventListener('click', function () {
-        degree.innerText = fahrenheit;
+function displayTemp(c, far) {
+        if (far) return Math.round((c * 9/5) + 32) + ' °F';
+        return Math.round(c) + ' °C';
+}
+
+function render(f, wd) {
+        var currentLocation = wd.name;
+        var currentWeather = wd.weather[0].description;
+        var currentTemp = displayTemp(wd.main.temp, f);
+        var currentCountry = wd.sys.country;
+        var currentWind = wd.wind.speed;
+        var currentIcon = wd.weather[0].icon;
+
+        $('#location').html(currentLocation + ', ' + currentCountry);
+        $('#temp').html(currentTemp);
+        $('#description').html(currentWeather);
+        $('#wind').html(currentWind + ' km/h');
+
+        var iconSrc = 'http://openweathermap.org/img/w/' + currentIcon + '.png';
+        $('#temp').prepend('<img src="' + iconSrc + '">');
+}
+
+$(function() {
+        var loc;
+        $.getJSON('http://ipinfo.io', function(d){
+                loc = d.loc.split(',');
+        $.getJSON('http://api.openweathermap.org/data/2.5/weather?lat=' + loc[0] +
+            '&lon=' + loc[1] + '&units=metric' + '&APPID=' + API_KEY, function (apiData) {
+              wd = apiData;
+
+                render(f, apiData);
+                $('#temp').click(function() {
+                        f = !f;
+                        render(f, wd);
+        })
+        });
+  })
 });
-
-var api = 'http://api.openweathermap.org/data/2.5/weather/city?id=';
-var city = 'Kiev';
-var units = '&units=metric';
-var apiId = '&APPID=ec69814ca5fb2ed6e86e1729347f5d6e';
-var cb = '&callback=JSON_CALLBACK';
-var apiCall = api + city + units+ apiId + cb
-console.log(apiCall);
-
-
